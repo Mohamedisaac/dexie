@@ -1,19 +1,26 @@
 const CACHE_NAME = 'terminology-dictionary-v1';
-const urlsToCache = [
-    './',
-    './index.html',
-    './style.css',
-    './app.js',
-    'https://unpkg.com/dexie@3/dist/dexie.js',
-    './manifest.json',
-    './biology.json',
-    './physics.json',
-    './soomaali_mansuur.json',
-    './geography.json',
-    './images/icon-192x192.png',
-    './images/icon-512x512.png',
-    './images/screen1.jpg',
-    './images/screen2.jpg'
+
+// The base path of your application on the server.
+// This is crucial for GitHub Pages deployment.
+const BASE_PATH = '/dexie/';
+
+
+// A list of all the files and assets we want to cache for offline use.
+const URLS_TO_CACHE = [
+    BASE_PATH,
+    `${BASE_PATH}index.html`,
+    `${BASE_PATH}style.css`,
+    `${BASE_PATH}app.js`,
+    `${BASE_PATH}https://unpkg.com/dexie@3/dist/dexie.js`,
+    `${BASE_PATH}manifest.json`,
+    `${BASE_PATH}biology.json`,
+    `${BASE_PATH}physics.json`,
+    `${BASE_PATH}geography.json`,
+    `${BASE_PATH}soomaali_mansuur.json`,
+    `${BASE_PATH}images/icon-192x192.png`,
+    `${BASE_PATH}images/icon-512x512.png`,
+    `${BASE_PATH}images/screen1.jpg`,
+    `${BASE_PATH}images/screen2.jpg`,
 ];
 
 self.addEventListener('install', event => {

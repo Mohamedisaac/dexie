@@ -1,7 +1,8 @@
 {
     "name": "Terminology Dictionary",
     "short_name": "Dictionary",
-    "start_url": ".",
+    "start_url": "/dexie/",
+    "scope": "/dexie/",
     "display": "standalone",
     "background_color": "#004080",
     "theme_color": "#004080",
