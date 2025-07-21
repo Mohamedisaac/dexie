@@ -1,7 +1,7 @@
 {
     "name": "Terminology Dictionary",
     "short_name": "Dictionary",
-    "start_url": "/index.html",
+    "start_url": ".",
     "display": "standalone",
     "background_color": "#004080",
     "theme_color": "#004080",
