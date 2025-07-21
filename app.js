@@ -20,11 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = document.getElementById('virtual-content');
 
     // --- State Variables ---
-    let currentDictionary = '';
-    let totalEntries = 0;
-    const entryHeight = 45;
+    let allEntries = [];
+    const entryHeight = 45; // The fixed pixel height of a single dictionary entry.
     let deferredPrompt;
-    let isScrolling = false;
 
     // --- Database Schema Definition ---
     db.version(1).stores({
@@ -38,95 +36,157 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. CORE FUNCTIONS
     // ===================================================================
 
-    async function populateDatabase() { /* ... unchanged, see bottom ... */ }
+    async function populateDatabase() {
+        for (const file of dictionaryFiles) {
+            const tableName = file.replace('.json', '');
+            const table = db[tableName];
+            try {
+                const count = await table.count();
+                if (count > 0) {
+                    console.log(`Table '${tableName}' is already populated.`);
+                    continue;
+                }
+                const response = await fetch(file);
+                if (!response.ok) throw new Error(`Network response was not ok for ${file}`);
+                const data = await response.json();
+                const entries = Object.entries(data).map(([term, definition]) => ({ term, definition }));
+                await table.bulkAdd(entries);
+            } catch (error) {
+                console.error(`CRITICAL ERROR while populating '${tableName}':`, error);
+            }
+        }
+    }
 
-    // --- NEW: High-performance render function that queries the DB directly ---
-    async function renderVisibleEntries() {
-        if (!viewport || !currentDictionary) return;
-
+    function renderVisibleEntries() {
+        if (!viewport) return;
         const scrollTop = viewport.scrollTop;
         const startIndex = Math.floor(scrollTop / entryHeight);
         const visibleItemCount = Math.ceil(viewport.clientHeight / entryHeight);
         const endIndex = startIndex + visibleItemCount + 2; // +2 for buffer
+        const visibleEntries = allEntries.slice(startIndex, endIndex);
 
-        try {
-            // This is the key: Fetch ONLY the visible slice from the database.
-            const visibleEntries = await db[currentDictionary]
-                .offset(startIndex)
-                .limit(endIndex - startIndex)
-                .toArray();
+        const fragment = document.createDocumentFragment();
+        visibleEntries.forEach(entryData => {
+            const entryEl = document.createElement('div');
+            entryEl.className = 'entry';
+            entryEl.style.height = `${entryHeight}px`;
+            entryEl.innerHTML = `<strong>${entryData.term}:</strong> ${entryData.definition}`;
+            fragment.appendChild(entryEl);
+        });
 
-            const fragment = document.createDocumentFragment();
-            visibleEntries.forEach(entryData => {
-                const entryEl = document.createElement('div');
-                entryEl.className = 'entry';
-                entryEl.style.height = `${entryHeight}px`;
-                entryEl.innerHTML = `<strong>${entryData.term}:</strong> ${entryData.definition}`;
-                fragment.appendChild(entryEl);
-            });
-
-            content.innerHTML = '';
-            content.style.paddingTop = `${startIndex * entryHeight}px`;
-            content.appendChild(fragment);
-
-        } catch (error) {
-            console.error("Error rendering visible entries:", error);
-        }
+        content.innerHTML = '';
+        content.style.paddingTop = `${startIndex * entryHeight}px`;
+        content.appendChild(fragment);
     }
 
-    function loadDictionaryList() { /* ... unchanged, see bottom ... */ }
+    function loadDictionaryList() {
+        if (dictionarySelect.options.length > 1) return;
+        dictionarySelect.innerHTML = '<option value="">Select a dictionary</option>';
+        for (const file of dictionaryFiles) {
+            const dictionaryName = file.replace('.json', '');
+            const option = document.createElement('option');
+            option.value = dictionaryName;
+            option.textContent = dictionaryName.charAt(0).toUpperCase() + dictionaryName.slice(1);
+            dictionarySelect.appendChild(option);
+        }
+    }
 
     // ===================================================================
     // 3. EVENT LISTENERS
     // ===================================================================
 
-    // --- NEW: High-performance dictionary selection handler ---
+    searchTabBtn.addEventListener('click', () => {
+        searchTab.classList.add('active');
+        showAllTab.classList.remove('active');
+        searchTabBtn.classList.add('active');
+        showAllTabBtn.classList.remove('active');
+    });
+
+    showAllTabBtn.addEventListener('click', () => {
+        showAllTab.classList.add('active');
+        searchTab.classList.remove('active');
+        showAllTabBtn.classList.add('active');
+        searchTabBtn.classList.remove('active');
+        if (allEntries.length > 0) {
+            setTimeout(renderVisibleEntries, 0);
+        }
+    });
+
+    searchInput.addEventListener('input', async (e) => {
+        const searchTerm = e.target.value.trim();
+        searchResults.innerHTML = '';
+        if (searchTerm.length < 1) return;
+        try {
+            const allTableNames = db.tables.map(table => table.name);
+            const searchPromises = allTableNames.map(tableName => db[tableName].where('term').startsWithIgnoreCase(searchTerm).toArray());
+            const resultsPerTable = await Promise.all(searchPromises);
+            let foundResults = false;
+            resultsPerTable.flat().forEach(entry => {
+                foundResults = true;
+                const resultEl = document.createElement('div');
+                resultEl.className = 'entry';
+                resultEl.innerHTML = `<strong>${entry.term}:</strong> ${entry.definition}`;
+                searchResults.appendChild(resultEl);
+            });
+            if (!foundResults) searchResults.innerHTML = '<div>No results found.</div>';
+        } catch (error) {
+            console.error("Error during search:", error);
+        }
+    });
+
     dictionarySelect.addEventListener('change', async (e) => {
-        selectedDictionary = e.target.value;
+        const selectedDictionary = e.target.value;
         content.innerHTML = '';
-        totalEntries = 0;
+        allEntries = [];
         viewport.scrollTop = 0;
-        
+
         if (!selectedDictionary) {
-            currentDictionary = '';
             content.style.height = '0px';
             return;
         }
-        
-        currentDictionary = selectedDictionary;
 
-        // Use the lightning-fast .count() instead of .toArray()
-        totalEntries = await db[currentDictionary].count();
-        console.log(`Dictionary '${currentDictionary}' has ${totalEntries} entries.`);
-        
-        // Set the scrollbar height
-        content.style.height = `${totalEntries * entryHeight}px`;
-        
-        // Trigger the first render
+        allEntries = await db[selectedDictionary].toArray();
+        content.style.height = `${allEntries.length * entryHeight}px`;
         setTimeout(renderVisibleEntries, 0);
     });
-    
-    // --- Unchanged Event Listeners (see bottom) ---
-    viewport.addEventListener('scroll', () => { /* ... */ });
-    // ... all others
+
+    viewport.addEventListener('scroll', renderVisibleEntries);
+
+    installButton.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        installButton.classList.remove('show');
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+    });
 
     // ===================================================================
     // 4. APP INITIALIZATION
     // ===================================================================
-    
-    // ... unchanged, see bottom ...
 
-    // --- For compactness, the unchanged code is below ---
-    async function populateDatabase() { for (const file of dictionaryFiles) { const tableName = file.replace('.json', ''); const table = db[tableName]; try { const count = await table.count(); if (count > 0) { continue; } const response = await fetch(file); if (!response.ok) throw new Error(`Network response was not ok for ${file}`); const data = await response.json(); const entries = Object.entries(data).map(([term, definition]) => ({ term, definition })); await table.bulkAdd(entries); } catch (error) { console.error(`CRITICAL ERROR while populating '${tableName}':`, error); } } }
-    function loadDictionaryList() { if (dictionarySelect.options.length > 1) return; dictionarySelect.innerHTML = '<option value="">Select a dictionary</option>'; for (const file of dictionaryFiles) { const dictionaryName = file.replace('.json', ''); const option = document.createElement('option'); option.value = dictionaryName; option.textContent = dictionaryName.charAt(0).toUpperCase() + dictionaryName.slice(1); dictionarySelect.appendChild(option); } }
-    searchTabBtn.addEventListener('click', () => { searchTab.classList.add('active'); showAllTab.classList.remove('active'); searchTabBtn.classList.add('active'); showAllTabBtn.classList.remove('active'); });
-    showAllTabBtn.addEventListener('click', () => { showAllTab.classList.add('active'); searchTab.classList.remove('active'); showAllTabBtn.classList.add('active'); searchTabBtn.classList.remove('active'); if (totalEntries > 0) { setTimeout(renderVisibleEntries, 0); } });
-    searchInput.addEventListener('input', async (e) => { const searchTerm = e.target.value.trim(); searchResults.innerHTML = ''; if (searchTerm.length < 1) return; try { const allTableNames = db.tables.map(table => table.name); const searchPromises = allTableNames.map(tableName => db[tableName].where('term').startsWithIgnoreCase(searchTerm).toArray()); const resultsPerTable = await Promise.all(searchPromises); let foundResults = false; resultsPerTable.flat().forEach(entry => { foundResults = true; const resultEl = document.createElement('div'); resultEl.className = 'entry'; resultEl.innerHTML = `<strong>${entry.term}:</strong> ${entry.definition}`; searchResults.appendChild(resultEl); }); if (!foundResults) searchResults.innerHTML = '<div>No results found.</div>'; } catch (error) { console.error("Error during search:", error); } });
-    viewport.addEventListener('scroll', () => { if (!isScrolling) { window.requestAnimationFrame(() => { renderVisibleEntries(); isScrolling = false; }); isScrolling = true; } });
-    installButton.addEventListener('click', async () => { if (!deferredPrompt) return; installButton.classList.remove('show'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installButton.classList.add('show'); });
-    window.addEventListener('appinstalled', () => { deferredPrompt = null; });
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(registration => { console.log('ServiceWorker registration successful with scope: ', registration.scope); }, err => { console.log('ServiceWorker registration failed: ', err); }); }); }
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.classList.add('show');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installButton.classList.remove('show');
+        deferredPrompt = null;
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Correct, relative path for GitHub Pages
+            navigator.serviceWorker.register('./sw.js').then(registration => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
 
     populateDatabase();
     loadDictionaryList();
