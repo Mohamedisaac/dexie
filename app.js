@@ -1,12 +1,18 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- All variables and DB setup are the same ---
-    const db = new Dexie('TerminologyDictionary');
-    const dictionaryFiles = ['biology.json', 'physics.json', 'soomaali_mansuur.json', 'geography.json'];
+    // ===================================================================
+    // 1. SETUP: VARIABLES AND DATABASE
+    // ===================================================================
+    // ... (All previous variables are the same)
+    
+    // NEW: Theme Toggle reference
     const themeToggleButton = document.getElementById('theme-toggle-button');
     const body = document.body;
-    // ... all other variables
+
+    // ... (The rest of the variables are the same)
+    const db = new Dexie('TerminologyDictionary');
+    const dictionaryFiles = ['biology.json', 'physics.json', 'soomaali_mansuur.json', 'geography.json'];
     const installButton = document.getElementById('install-button');
     const searchTab = document.getElementById('search-tab');
     const showAllTab = document.getElementById('show-all-tab');
@@ -20,30 +26,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoButton = document.getElementById('info-button');
     const aboutModal = document.getElementById('about-modal');
     const modalCloseButton = document.querySelector('.modal-close-button');
-    let currentDictionary = ''; let totalEntries = 0; const entryHeight = 45;
-    let deferredPrompt; let isScrolling = false;
+    let currentDictionary = '';
+    let totalEntries = 0;
+    const entryHeight = 45;
+    let deferredPrompt;
+    let isScrolling = false;
     db.version(1).stores({
-        biology: '++id, term, definition', physics: '++id, term, definition',
-        soomaali_mansuur: '++id, term, definition', geography: '++id, term, definition'
+        biology: '++id, term, definition',
+        physics: '++id, term, definition',
+        soomaali_mansuur: '++id, term, definition',
+        geography: '++id, term, definition'
     });
+
+    // ===================================================================
+    // 2. CORE FUNCTIONS (Unchanged)
+    // ===================================================================
+    async function populateDatabase() { /* ... */ }
+    async function renderVisibleEntries() { /* ... */ }
+    function loadDictionaryList() { /* ... */ }
+
+    // ===================================================================
+    // 3. EVENT LISTENERS
+    // ===================================================================
     
-    // --- All core functions are the same ---
-    async function populateDatabase() { /* ... as before ... */ }
-    async function renderVisibleEntries() { /* ... as before ... */ }
-    function loadDictionaryList() { /* ... as before ... */ }
-    
-    // --- SIMPLIFIED Theme Toggle Listener ---
+    // --- NEW: Theme Toggle Listener ---
     themeToggleButton.addEventListener('click', () => {
         body.classList.toggle('dark-mode');
-        // Save preference to localStorage
+
+        // Save preference and update icon
         if (body.classList.contains('dark-mode')) {
             localStorage.setItem('theme', 'dark');
+            themeToggleButton.textContent = '☀';
         } else {
             localStorage.removeItem('theme');
+            themeToggleButton.textContent = '🌙';
         }
     });
-    
-    // --- All other event listeners are the same ---
+
+    // --- Other Listeners (Unchanged) ---
+    // ... (All other event listeners are the same)
     infoButton.addEventListener('click', () => { aboutModal.classList.add('show'); });
     modalCloseButton.addEventListener('click', () => { aboutModal.classList.remove('show'); });
     aboutModal.addEventListener('click', (event) => { if (event.target === aboutModal) { aboutModal.classList.remove('show'); } });
@@ -53,15 +74,22 @@ document.addEventListener('DOMContentLoaded', () => {
     dictionarySelect.addEventListener('change', async (e) => { const selectedDictionary = e.target.value; content.innerHTML = ''; totalEntries = 0; viewport.scrollTop = 0; if (!selectedDictionary) { currentDictionary = ''; content.style.height = '0px'; return; } currentDictionary = selectedDictionary; totalEntries = await db[currentDictionary].count(); content.style.height = `${totalEntries * entryHeight}px`; setTimeout(renderVisibleEntries, 0); });
     viewport.addEventListener('scroll', () => { if (!isScrolling) { window.requestAnimationFrame(() => { renderVisibleEntries(); isScrolling = false; }); isScrolling = true; } });
     installButton.addEventListener('click', async () => { if (!deferredPrompt) return; installButton.classList.remove('show'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
+
+    // ===================================================================
+    // 4. APP INITIALIZATION
+    // ===================================================================
     
-    // --- APP INITIALIZATION ---
-    // Check for saved theme on page load
+    // --- NEW: Check for saved theme on page load ---
     if (localStorage.getItem('theme') === 'dark') {
         body.classList.add('dark-mode');
+        themeToggleButton.textContent = '☀';
     }
+
+    // --- PWA Listeners (Unchanged) ---
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installButton.classList.add('show'); });
     window.addEventListener('appinstalled', () => { deferredPrompt = null; });
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(registration => { console.log('ServiceWorker registration successful with scope: ', registration.scope); }, err => { console.log('ServiceWorker registration failed: ', err); }); }); }
+    
     populateDatabase();
     loadDictionaryList();
 
