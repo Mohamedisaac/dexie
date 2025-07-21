@@ -3,6 +3,7 @@
     "short_name": "Dictionary",
     "description": "A fast, offline-first terminology dictionary PWA.",
     "start_url": ".",
+    "id": "/dexie/",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#EAFDFC",
