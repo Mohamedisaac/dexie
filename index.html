@@ -10,7 +10,6 @@
 <body>
     <header>
         <h1>Terminology Dictionary</h1>
-        <!-- Custom Install Button for PWA -->
         <button id="install-button" class="install-button">Install App</button>
     </header>
     <nav>
@@ -23,17 +22,29 @@
             <input type="text" id="search-input" placeholder="Enter a term...">
             <div id="search-results"></div>
         </div>
-
         <!-- The "Show All" Tab with Virtual Scroller -->
         <div id="show-all-tab" class="tab-content">
             <select id="dictionary-select"></select>
-
             <div id="virtual-viewport">
                 <div id="virtual-content"></div>
             </div>
         </div>
-        
     </main>
+
+    <!-- NEW: Info Button -->
+    <button id="info-button" aria-label="About this dictionary">i</button>
+
+    <!-- NEW: About Modal -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">×</span>
+            <h2>About This Dictionary</h2>
+            <p>This is a fast, offline-first Progressive Web App designed to provide quick access to various terminology dictionaries.</p>
+            <p>Built with ❤️ using vanilla HTML, CSS, and JavaScript with Dexie.js for IndexedDB storage.</p>
+            <p><strong>Developer:</strong> Mohamed Isaac</p>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
     <script src="app.js"></script>
 </body>
