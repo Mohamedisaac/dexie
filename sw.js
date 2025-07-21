@@ -20,7 +20,7 @@ const URLS_TO_CACHE = [
     `${BASE_PATH}images/icon-192x192.png`,
     `${BASE_PATH}images/icon-512x512.png`,
     `${BASE_PATH}images/screen1.jpg`,
-    `${BASE_PATH}images/screen2.jpg`,
+    `${BASE_PATH}images/screen2.jpg`
 ];
 
 self.addEventListener('install', event => {

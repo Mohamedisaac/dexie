@@ -1,13 +1,15 @@
 {
     "name": "Terminology Dictionary",
     "short_name": "Dictionary",
+    "description": "A fast, offline-first terminology dictionary PWA.",
     "start_url": "/dexie/",
     "scope": "/dexie/",
     "display": "standalone",
-    "background_color": "#004080",
-    "theme_color": "#004080",
-    "description": "A fast, offline terminology dictionary.",
-    "images": [
+    "orientation": "portrait-primary",
+    "background_color": "#EAFDFC",
+    "theme_color": "#A0D2EB",
+    "display_override": ["window-controls-overlay"],
+    "icons": [
         {
             "src": "images/icon-192x192.png",
             "sizes": "192x192",
