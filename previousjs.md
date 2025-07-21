@@ -20,11 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = document.getElementById('virtual-content');
 
     // --- State Variables ---
-    let currentDictionary = '';
-    let totalEntries = 0;
-    const entryHeight = 45;
+    let allEntries = [];
+    const entryHeight = 45; // The fixed pixel height of a single dictionary entry.
     let deferredPrompt;
-    let isScrolling = false;
 
     // --- Database Schema Definition ---
     db.version(1).stores({
@@ -44,7 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const table = db[tableName];
             try {
                 const count = await table.count();
-                if (count > 0) continue;
+                if (count > 0) {
+                    console.log(`Table '${tableName}' is already populated.`);
+                    continue;
+                }
                 const response = await fetch(file);
                 if (!response.ok) throw new Error(`Network response was not ok for ${file}`);
                 const data = await response.json();
@@ -56,35 +57,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function renderVisibleEntries() {
-        if (!viewport || !currentDictionary) return;
-        if (viewport.clientHeight === 0) return; // Stop if the viewport isn't visible
-
+    function renderVisibleEntries() {
+        if (!viewport) return;
         const scrollTop = viewport.scrollTop;
         const startIndex = Math.floor(scrollTop / entryHeight);
         const visibleItemCount = Math.ceil(viewport.clientHeight / entryHeight);
-        const endIndex = startIndex + visibleItemCount + 2;
+        const endIndex = startIndex + visibleItemCount + 2; // +2 for buffer
+        const visibleEntries = allEntries.slice(startIndex, endIndex);
 
-        try {
-            const visibleEntries = await db[currentDictionary]
-                .offset(startIndex)
-                .limit(endIndex - startIndex)
-                .toArray();
+        const fragment = document.createDocumentFragment();
+        visibleEntries.forEach(entryData => {
+            const entryEl = document.createElement('div');
+            entryEl.className = 'entry';
+            entryEl.style.height = `${entryHeight}px`;
+            entryEl.innerHTML = `<strong>${entryData.term}:</strong> ${entryData.definition}`;
+            fragment.appendChild(entryEl);
+        });
 
-            const fragment = document.createDocumentFragment();
-            visibleEntries.forEach(entryData => {
-                const entryEl = document.createElement('div');
-                entryEl.className = 'entry';
-                entryEl.style.height = `${entryHeight}px`;
-                entryEl.innerHTML = `<strong>${entryData.term}:</strong> ${entryData.definition}`;
-                fragment.appendChild(entryEl);
-            });
-            content.innerHTML = '';
-            content.style.paddingTop = `${startIndex * entryHeight}px`;
-            content.appendChild(fragment);
-        } catch (error) {
-            console.error("Error rendering visible entries:", error);
-        }
+        content.innerHTML = '';
+        content.style.paddingTop = `${startIndex * entryHeight}px`;
+        content.appendChild(fragment);
     }
 
     function loadDictionaryList() {
@@ -115,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchTab.classList.remove('active');
         showAllTabBtn.classList.add('active');
         searchTabBtn.classList.remove('active');
-        if (totalEntries > 0) {
+        if (allEntries.length > 0) {
             setTimeout(renderVisibleEntries, 0);
         }
     });
@@ -126,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchTerm.length < 1) return;
         try {
             const allTableNames = db.tables.map(table => table.name);
-            const searchPromises = allTableNames.map(tableName => db[tableName].where('term').startsWithIgnoreCase(searchTerm).limit(100).toArray());
+            const searchPromises = allTableNames.map(tableName => db[tableName].where('term').startsWithIgnoreCase(searchTerm).toArray());
             const resultsPerTable = await Promise.all(searchPromises);
             let foundResults = false;
             resultsPerTable.flat().forEach(entry => {
@@ -145,45 +137,57 @@ document.addEventListener('DOMContentLoaded', () => {
     dictionarySelect.addEventListener('change', async (e) => {
         const selectedDictionary = e.target.value;
         content.innerHTML = '';
-        totalEntries = 0;
+        allEntries = [];
         viewport.scrollTop = 0;
-        
+
         if (!selectedDictionary) {
-            currentDictionary = '';
             content.style.height = '0px';
             return;
         }
-        
-        currentDictionary = selectedDictionary;
-        totalEntries = await db[currentDictionary].count();
-        content.style.height = `${totalEntries * entryHeight}px`;
+
+        allEntries = await db[selectedDictionary].toArray();
+        content.style.height = `${allEntries.length * entryHeight}px`;
         setTimeout(renderVisibleEntries, 0);
     });
 
-    viewport.addEventListener('scroll', () => {
-        if (!isScrolling) {
-            window.requestAnimationFrame(() => {
-                renderVisibleEntries();
-                isScrolling = false;
-            });
-            isScrolling = true;
-        }
-    });
+    viewport.addEventListener('scroll', renderVisibleEntries);
 
     installButton.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         installButton.classList.remove('show');
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
         deferredPrompt = null;
     });
 
     // ===================================================================
     // 4. APP INITIALIZATION
     // ===================================================================
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installButton.classList.add('show'); });
-    window.addEventListener('appinstalled', () => { deferredPrompt = null; });
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(registration => { console.log('ServiceWorker registration successful with scope: ', registration.scope); }, err => { console.log('ServiceWorker registration failed: ', err); }); }); }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.classList.add('show');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installButton.classList.remove('show');
+        deferredPrompt = null;
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Correct, relative path for GitHub Pages
+            navigator.serviceWorker.register('./sw.js').then(registration => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+
     populateDatabase();
     loadDictionaryList();
 });
