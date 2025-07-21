@@ -116,8 +116,6 @@ main {
     display: inline-block;
 }
 
-/* === Add these new styles to the end of your existing style.css === */
-
 /* --- Info Button --- */
 #info-button {
     position: fixed;
@@ -167,7 +165,7 @@ main {
     padding: 20px 30px;
     border-radius: 8px;
     width: 90%;
-    max-width: 500px;
+    max-w: 500px;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     animation: fadeIn 0.3s;
@@ -196,4 +194,69 @@ main {
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
+}
+
+/* ======================================================= */
+/* --- NEW STYLES FOR THEME TOGGLE AND DARK MODE --- */
+/* ======================================================= */
+
+/* --- Theme Toggle Button --- */
+.theme-toggle-button {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 1rem;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Dark Mode Styles triggered by a body class --- */
+body.dark-mode {
+    background-color: #1a202c; /* Dark Slate */
+    color: #e2e8f0; /* Light Gray */
+}
+
+body.dark-mode #search-input,
+body.dark-mode #dictionary-select {
+    background-color: #2d3748; /* Slightly lighter dark */
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+body.dark-mode #virtual-viewport {
+    background-color: #1a202c;
+    border-color: #4a5568;
+}
+
+body.dark-mode .entry {
+    background-color: #2d3748;
+    box-shadow: none;
+    border: 1px solid #4a5568;
+}
+
+body.dark-mode .entry strong {
+    color: #63b3ed; /* A brighter, more accessible blue */
+}
+
+body.dark-mode .modal-content {
+    background-color: #2d3748;
+}
+
+body.dark-mode .modal-content h2 {
+    color: #63b3ed;
+}
+
+body.dark-mode .modal-close-button {
+    color: #a0aec0;
+}
+
+body.dark-mode .modal-close-button:hover {
+    color: #e2e8f0;
 }
