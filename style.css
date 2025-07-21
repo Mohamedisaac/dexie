@@ -1,262 +1,142 @@
+/* === Replace your ENTIRE `style.css` file with this === */
 body {
-    font-family: sans-serif;
-    margin: 0;
-    background-color: #f0f8ff;
-    color: #333;
+    font-family: sans-serif; margin: 0; background-color: #f0f8ff; color: #333;
 }
-
 header {
-    background-color: #004080;
-    color: white;
-    padding: 1rem;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #004080; color: white; padding: 1rem; text-align: center;
+    display: flex; justify-content: center; align-items: center;
 }
-
-header h1 {
-    margin: 0;
-}
-
+header h1 { margin: 0; }
 nav {
-    display: flex;
-    justify-content: center;
-    background-color: #005a9c;
+    display: flex; justify-content: center; background-color: #005a9c;
 }
-
 nav button {
-    background-color: transparent;
-    border: none;
-    color: white;
-    padding: 1rem 2rem;
-    cursor: pointer;
-    font-size: 1rem;
+    background-color: transparent; border: none; color: white; padding: 1rem 2rem;
+    cursor: pointer; font-size: 1rem;
 }
-
-nav button.active {
-    background-color: #004080;
-}
-
-main {
-    padding: 1rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
+nav button.active { background-color: #004080; }
+main { padding: 1rem; max-width: 800px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 #search-input, #dictionary-select {
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc;
+    border-radius: 4px; box-sizing: border-box;
 }
-
-#search-results, #dictionary-content {
-    margin-top: 1rem;
-}
-
+#search-results { margin-top: 1rem; }
 .entry {
-    background-color: white;
-    padding: 0.8rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    overflow: hidden;
+    background-color: white; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; overflow: hidden;
 }
-
-.entry strong {
-    color: #004080;
-    margin-right: 8px;
-}
-
-/* --- Virtual Scroller Styles --- */
+.entry strong { color: #004080; margin-right: 8px; }
 #virtual-viewport {
-    height: 65vh; /* 65% of the viewport height */
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
+    height: 65vh; overflow-y: auto; border: 1px solid #ccc;
+    border-radius: 4px; background-color: #fff;
 }
-
-#virtual-content {
-    position: relative;
-}
-
-
-/* --- PWA Install Button Styles --- */
+#virtual-content { position: relative; }
 .install-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-left: 1rem;
-    vertical-align: middle;
-
-    /* Hide the button by default */
-    display: none;
+    background-color: #007bff; color: white; border: none; padding: 0.5rem 1rem;
+    border-radius: 5px; cursor: pointer; font-size: 0.9rem; margin-left: 1rem;
+    vertical-align: middle; display: none;
 }
-
-.install-button.show {
-    /* Show the button when this class is added */
-    display: inline-block;
-}
-
-/* --- Info Button --- */
+.install-button.show { display: inline-block; }
 #info-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background-color: #005a9c;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 24px;
-    font-weight: bold;
-    font-family: serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 999;
+    position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+    background-color: #005a9c; color: white; border: none; border-radius: 50%;
+    font-size: 24px; font-weight: bold; font-family: serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 999;
 }
-
-/* --- Modal Styles --- */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); /* Black background with opacity */
-    
-    /* For centering the content */
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center;
 }
-
-.modal.show {
-    display: flex; /* Shown when class is added */
-}
-
+.modal.show { display: flex; }
 .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px 30px;
-    border-radius: 8px;
-    width: 90%;
-    max-w: 500px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    background-color: #fefefe; margin: auto; padding: 20px 30px; border-radius: 8px;
+    width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     animation: fadeIn 0.3s;
 }
-
-.modal-content h2 {
-    margin-top: 0;
-    color: #004080;
-}
-
+.modal-content h2 { margin-top: 0; color: #004080; }
 .modal-close-button {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+    color: #aaa; position: absolute; top: 10px; right: 20px;
+    font-size: 28px; font-weight: bold; cursor: pointer;
 }
-
-.modal-close-button:hover,
-.modal-close-button:focus {
-    color: black;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
+.modal-close-button:hover, .modal-close-button:focus { color: black; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
 /* ======================================================= */
-/* --- NEW STYLES FOR THEME TOGGLE AND DARK MODE --- */
+/* --- THEME TOGGLE AND DARK MODE STYLES --- */
 /* ======================================================= */
 
 /* --- Theme Toggle Button --- */
 .theme-toggle-button {
-    background-color: transparent;
+    background: none;
     border: 1px solid white;
-    color: white;
     width: 40px;
     height: 40px;
+    padding: 0;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 20px;
     margin-left: 1rem;
-    vertical-align: middle;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    overflow: hidden; /* Important for the transition */
 }
+
+/* Base style for both sun and moon icons */
+.theme-toggle-button::before,
+.theme-toggle-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* --- The MOON icon (default state) --- */
+.theme-toggle-button::before {
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 50%;
+    box-shadow: -5px -1px 0 0 white; /* This creates the crescent */
+}
+
+/* --- The SUN icon (hidden by default) --- */
+.theme-toggle-button::after {
+    transform: translate(-50%, -50%) scale(0);
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+/* --- On dark mode, reveal the SUN and hide the MOON --- */
+body.dark-mode .theme-toggle-button::before {
+    transform: translate(100%, -50%); /* Move moon off-screen */
+}
+body.dark-mode .theme-toggle-button::after {
+    transform: translate(-50%, -50%) scale(1); /* Reveal sun */
+}
+
 
 /* --- Dark Mode Styles triggered by a body class --- */
 body.dark-mode {
-    background-color: #1a202c; /* Dark Slate */
-    color: #e2e8f0; /* Light Gray */
+    background-color: #1a202c; color: #e2e8f0;
 }
-
 body.dark-mode #search-input,
 body.dark-mode #dictionary-select {
-    background-color: #2d3748; /* Slightly lighter dark */
-    color: #e2e8f0;
-    border-color: #4a5568;
+    background-color: #2d3748; color: #e2e8f0; border-color: #4a5568;
 }
-
 body.dark-mode #virtual-viewport {
-    background-color: #1a202c;
-    border-color: #4a5568;
+    background-color: #1a202c; border-color: #4a5568;
 }
-
 body.dark-mode .entry {
-    background-color: #2d3748;
-    box-shadow: none;
-    border: 1px solid #4a5568;
+    background-color: #2d3748; box-shadow: none; border: 1px solid #4a5568;
 }
-
-body.dark-mode .entry strong {
-    color: #63b3ed; /* A brighter, more accessible blue */
-}
-
-body.dark-mode .modal-content {
-    background-color: #2d3748;
-}
-
-body.dark-mode .modal-content h2 {
-    color: #63b3ed;
-}
-
-body.dark-mode .modal-close-button {
-    color: #a0aec0;
-}
-
-body.dark-mode .modal-close-button:hover {
-    color: #e2e8f0;
-}
+body.dark-mode .entry strong { color: #63b3ed; }
+body.dark-mode .modal-content { background-color: #2d3748; }
+body.dark-mode .modal-content h2 { color: #63b3ed; }
+body.dark-mode .modal-close-button { color: #a0aec0; }
+body.dark-mode .modal-close-button:hover { color: #e2e8f0; }
