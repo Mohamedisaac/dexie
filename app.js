@@ -19,11 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewport = document.getElementById('virtual-viewport');
     const content = document.getElementById('virtual-content');
 
-    // --- Virtual Scroller State ---
+    // --- State Variables ---
     let allEntries = [];
     const entryHeight = 45; // The fixed pixel height of a single dictionary entry.
-
-    // --- PWA Install Prompt State ---
     let deferredPrompt;
 
     // --- Database Schema Definition ---
@@ -44,16 +42,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const table = db[tableName];
             try {
                 const count = await table.count();
-                if (count > 0) { console.log(`Table '${tableName}' is already populated.`); continue; }
+                if (count > 0) {
+                    console.log(`Table '${tableName}' is already populated.`);
+                    continue;
+                }
                 const response = await fetch(file);
                 if (!response.ok) throw new Error(`Network response was not ok for ${file}`);
                 const data = await response.json();
                 const entries = Object.entries(data).map(([term, definition]) => ({ term, definition }));
                 await table.bulkAdd(entries);
-            } catch (error) { console.error(`CRITICAL ERROR while populating '${tableName}':`, error); }
+            } catch (error) {
+                console.error(`CRITICAL ERROR while populating '${tableName}':`, error);
+            }
         }
     }
-    
+
     function renderVisibleEntries() {
         if (!viewport) return;
         const scrollTop = viewport.scrollTop;
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         content.style.paddingTop = `${startIndex * entryHeight}px`;
         content.appendChild(fragment);
     }
-    
+
     function loadDictionaryList() {
         if (dictionarySelect.options.length > 1) return;
         dictionarySelect.innerHTML = '<option value="">Select a dictionary</option>';
@@ -126,15 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchResults.appendChild(resultEl);
             });
             if (!foundResults) searchResults.innerHTML = '<div>No results found.</div>';
-        } catch (error) { console.error("Error during search:", error); }
+        } catch (error) {
+            console.error("Error during search:", error);
+        }
     });
 
     dictionarySelect.addEventListener('change', async (e) => {
         const selectedDictionary = e.target.value;
         content.innerHTML = '';
         allEntries = [];
-        viewport.scrollTop = 0; 
-        
+        viewport.scrollTop = 0;
+
         if (!selectedDictionary) {
             content.style.height = '0px';
             return;
@@ -159,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================
     // 4. APP INITIALIZATION
     // ===================================================================
-    
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -171,9 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
         installButton.classList.remove('show');
         deferredPrompt = null;
     });
-    
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
+            // Correct, relative path for GitHub Pages
             navigator.serviceWorker.register('./sw.js').then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, err => {
