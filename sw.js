@@ -1,15 +1,19 @@
 const CACHE_NAME = 'terminology-dictionary-v1';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/app.js',
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
     'https://unpkg.com/dexie@3/dist/dexie.js',
-    '/manifest.json',
-    '/biology.json',
-    '/physics.json',
-    '/soomaali_mansuur.json',
-    '/geography.json'
+    './manifest.json',
+    './biology.json',
+    './physics.json',
+    './soomaali_mansuur.json',
+    './geography.json',
+    './images/icon-192x192.png',
+    './images/icon-512x512.png',
+    './images/screen1.jpg',
+    './images/screen2.jpg'
 ];
 
 self.addEventListener('install', event => {
