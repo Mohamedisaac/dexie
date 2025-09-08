@@ -1,4 +1,4 @@
-const CACHE_NAME = 'terminology-dictionary-v2';
+const CACHE_NAME = 'terminology-dictionary-v3';
 const urlsToCache = [
     './',
     './index.html',
