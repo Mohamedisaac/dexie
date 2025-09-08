@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ... (The rest of the variables are the same)
     const db = new Dexie('TerminologyDictionary');
-    const dictionaryFiles = ['xisaab.json', 'bayoloji.json', 'fisikis.json', 'soomaali_mansuur.json', 'juqraafi.json'];
+    const dictionaryFiles = ['xisaab.json', 'bayoloji.json', 'fisikis.json', 'soomaali_mansuur.json', 'juqraafi.json', 'doorashooyinka.json'];
     const installButton = document.getElementById('install-button');
     const searchTab = document.getElementById('search-tab');
     const showAllTab = document.getElementById('show-all-tab');
@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bayoloji: '++id, term, definition',
         fisikis: '++id, term, definition',
         soomaali_mansuur: '++id, term, definition',
-        juqraafi: '++id, term, definition'
+        juqraafi: '++id, term, definition',
+        doorashooyinka: '++id, term, definition'
     });
 
     // ===================================================================
