@@ -1,5 +1,5 @@
-// IMPORTANT: Change this version number every time you update your app's files.
-const CACHE_NAME = 'terminology-dictionary-v7'; 
+// IMPORTANT: Change this version number every time you deploy an update.
+const CACHE_NAME = 'terminology-dictionary-v6';
 const urlsToCache = [
     './',
     './index.html',
@@ -18,48 +18,58 @@ const urlsToCache = [
     './images/screen2.jpg',
 ];
 
-// Install event: cache all the core assets.
+// --- INSTALL: Cache the app shell and assets ---
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Opened cache and caching all assets');
+                console.log('Opened cache and caching files');
                 return cache.addAll(urlsToCache);
             })
-            .then(() => self.skipWaiting()) // <-- IMPORTANT: Forces the waiting service worker to become the active service worker.
+            .then(() => self.skipWaiting()) // Force activation of new service worker
     );
 });
 
-// Activate event: clean up old caches.
+// --- ACTIVATE: Clean up old caches ---
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    // If the cache name is not in our whitelist, delete it.
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                    if (cacheName !== CACHE_NAME) {
                         console.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
-        }).then(() => self.clients.claim()) // <-- IMPORTANT: Takes control of all open clients (pages) so that the new service worker can handle them.
+        }).then(() => self.clients.claim()) // Take control of open pages
     );
 });
 
-
-// Fetch event: serve from cache first for fast offline access.
+// --- FETCH: Stale-While-Revalidate Strategy ---
 self.addEventListener('fetch', event => {
+    // Ignore non-GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Cache hit - return response from cache
-                if (response) {
-                    return response;
-                }
-                // Not in cache - fetch from network
-                return fetch(event.request);
-            })
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request).then(cachedResponse => {
+                // 1. Create a promise that fetches the request from the network.
+                const fetchPromise = fetch(event.request).then(networkResponse => {
+                    // If we get a valid response, update the cache.
+                    if (networkResponse.ok) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                });
+
+                // 2. Return the cached response immediately if it exists,
+                // while the network request runs in the background.
+                // If not in cache, wait for the network response.
+                return cachedResponse || fetchPromise;
+            });
+        })
     );
 });
