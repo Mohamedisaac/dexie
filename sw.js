@@ -1,4 +1,5 @@
-const CACHE_NAME = 'terminology-dictionary-v5'; // bump version when updating
+// IMPORTANT: Change this version number every time you update your app's files.
+const CACHE_NAME = 'terminology-dictionary-v6'; 
 const urlsToCache = [
     './',
     './index.html',
@@ -17,50 +18,48 @@ const urlsToCache = [
     './images/screen2.jpg',
 ];
 
-// Install - cache essential assets
+// Install event: cache all the core assets.
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('Opened cache');
-            return cache.addAll(urlsToCache);
-        })
-    );
-    self.skipWaiting(); // activate immediately
-});
-
-// Fetch - stale-while-revalidate strategy
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.match(event.request).then(response => {
-                const fetchPromise = fetch(event.request)
-                    .then(networkResponse => {
-                        // Update the cache with a fresh copy
-                        if (networkResponse && networkResponse.status === 200) {
-                            cache.put(event.request, networkResponse.clone());
-                        }
-                        return networkResponse;
-                    })
-                    .catch(() => response); // fallback to cache if offline
-                return response || fetchPromise;
-            });
-        })
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache and caching all assets');
+                return cache.addAll(urlsToCache);
+            })
+            .then(() => self.skipWaiting()) // <-- IMPORTANT: Forces the waiting service worker to become the active service worker.
     );
 });
 
-// Activate - clean up old caches
+// Activate event: clean up old caches.
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (!cacheWhitelist.includes(cacheName)) {
+                    // If the cache name is not in our whitelist, delete it.
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim()) // <-- IMPORTANT: Takes control of all open clients (pages) so that the new service worker can handle them.
     );
-    self.clients.claim(); // take control of all pages immediately
+});
+
+
+// Fetch event: serve from cache first for fast offline access.
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                // Cache hit - return response from cache
+                if (response) {
+                    return response;
+                }
+                // Not in cache - fetch from network
+                return fetch(event.request);
+            })
+    );
 });
