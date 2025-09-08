@@ -1,5 +1,5 @@
 // IMPORTANT: Change this version number every time you update your app's files.
-const CACHE_NAME = 'terminology-dictionary-v6'; 
+const CACHE_NAME = 'terminology-dictionary-v7'; 
 const urlsToCache = [
     './',
     './index.html',
