@@ -1,5 +1,5 @@
 // IMPORTANT: Change this version number every time you deploy an update.
-const CACHE_NAME = 'terminology-dictionary-v6';
+const CACHE_NAME = 'terminology-dictionary-v8';
 const urlsToCache = [
     './',
     './index.html',
