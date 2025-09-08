@@ -1,4 +1,4 @@
-const CACHE_NAME = 'terminology-dictionary-v1';
+const CACHE_NAME = 'terminology-dictionary-v2';
 const urlsToCache = [
     './',
     './index.html',
@@ -6,10 +6,11 @@ const urlsToCache = [
     './app.js',
     'https://unpkg.com/dexie@3/dist/dexie.js',
     './manifest.json',
-    './biology.json',
-    './physics.json',
+    './xisaab.json',
+    './bayoloji.json',
+    './fisikis.json',
     './soomaali_mansuur.json',
-    './geography.json',
+    './juqraafi.json',
     './images/icon-192x192.png',
     './images/icon-512x512.png',
     './images/screen1.jpg',

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ... (The rest of the variables are the same)
     const db = new Dexie('TerminologyDictionary');
-    const dictionaryFiles = ['biology.json', 'physics.json', 'soomaali_mansuur.json', 'geography.json'];
+    const dictionaryFiles = ['xisaab.json', 'bayoloji.json', 'fisikis.json', 'soomaali_mansuur.json', 'juqraafi.json'];
     const installButton = document.getElementById('install-button');
     const searchTab = document.getElementById('search-tab');
     const showAllTab = document.getElementById('show-all-tab');
@@ -32,10 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let deferredPrompt;
     let isScrolling = false;
     db.version(1).stores({
-        biology: '++id, term, definition',
-        physics: '++id, term, definition',
+        xisaab: '++id, term, definition',
+        bayoloji: '++id, term, definition',
+        fisikis: '++id, term, definition',
         soomaali_mansuur: '++id, term, definition',
-        geography: '++id, term, definition'
+        juqraafi: '++id, term, definition'
     });
 
     // ===================================================================
@@ -96,5 +97,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UNCHANGED FUNCTIONS FOR COMPLETENESS ---
     async function populateDatabase() { for (const file of dictionaryFiles) { const tableName = file.replace('.json', ''); const table = db[tableName]; try { const count = await table.count(); if (count > 0) continue; const response = await fetch(file); if (!response.ok) throw new Error(`Network response was not ok for ${file}`); const data = await response.json(); const entries = Object.entries(data).map(([term, definition]) => ({ term, definition })); await table.bulkAdd(entries); } catch (error) { console.error(`CRITICAL ERROR while populating '${tableName}':`, error); } } }
     async function renderVisibleEntries() { if (!viewport || !currentDictionary) return; if (viewport.clientHeight === 0) return; const scrollTop = viewport.scrollTop; const startIndex = Math.floor(scrollTop / entryHeight); const visibleItemCount = Math.ceil(viewport.clientHeight / entryHeight); const endIndex = startIndex + visibleItemCount + 2; try { const visibleEntries = await db[currentDictionary].offset(startIndex).limit(endIndex - startIndex).toArray(); const fragment = document.createDocumentFragment(); visibleEntries.forEach(entryData => { const entryEl = document.createElement('div'); entryEl.className = 'entry'; entryEl.style.height = `${entryHeight}px`; entryEl.innerHTML = `<strong>${entryData.term}:</strong> ${entryData.definition}`; fragment.appendChild(entryEl); }); content.innerHTML = ''; content.style.paddingTop = `${startIndex * entryHeight}px`; content.appendChild(fragment); } catch (error) { console.error("Error rendering visible entries:", error); } }
-    function loadDictionaryList() { if (dictionarySelect.options.length > 1) return; dictionarySelect.innerHTML = '<option value="">Select a dictionary</option>'; for (const file of dictionaryFiles) { const dictionaryName = file.replace('.json', ''); const option = document.createElement('option'); option.value = dictionaryName; option.textContent = dictionaryName.charAt(0).toUpperCase() + dictionaryName.slice(1); dictionarySelect.appendChild(option); } }
+    function loadDictionaryList() { if (dictionarySelect.options.length > 1) return; dictionarySelect.innerHTML = '<option value="">Dooro Qaamuus</option>'; for (const file of dictionaryFiles) { const dictionaryName = file.replace('.json', ''); const option = document.createElement('option'); option.value = dictionaryName; option.textContent = dictionaryName.charAt(0).toUpperCase() + dictionaryName.slice(1); dictionarySelect.appendChild(option); } }
 });

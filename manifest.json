@@ -1,7 +1,7 @@
 {
-    "name": "Terminology Dictionary",
-    "short_name": "Dictionary",
-    "description": "A fast, offline-first terminology dictionary PWA.",
+    "name": "Qaamuuska Erey Bixinta",
+    "short_name": "Qaamuuska",
+    "description": "Qaamuus erey bixin oo internet la'aan shaqaynaya.",
     "start_url": ".",
     "id": "/dexie/",
     "display": "standalone",
