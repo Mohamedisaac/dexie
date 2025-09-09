@@ -1,96 +1,76 @@
-const CACHE_NAME = 'terminology-dictionary-v4'; // ⬅️ Increment this on every major update!
+// IMPORTANT: Change this version number every time you deploy an update.
+const CACHE_NAME = 'terminology-dictionary-v8';
 const urlsToCache = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  'https://unpkg.com/dexie@3/dist/dexie.js',
-  './manifest.json',
-  './xisaab.json',
-  './bayoloji.json',
-  './fisikis.json',
-  './soomaali_mansuur.json',
-  './juqraafi.json',
-  './doorashooyinka.json',
-  './images/icon-192x192.png',
-  './images/icon-512x512.png',
-  './images/screen1.jpg',
-  './images/screen2.jpg',
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    'https://unpkg.com/dexie@3/dist/dexie.js',
+    './manifest.json',
+    './xisaab.json',
+    './bayoloji.json',
+    './fisikis.json',
+    './soomaali_mansuur.json',
+    './juqraafi.json',
+    './doorashooyinka.json',
+    './images/icon-192x192.png',
+    './images/icon-512x512.png',
+    './images/screen1.jpg',
+    './images/screen2.jpg',
 ];
 
-// Install event — cache core assets
+// --- INSTALL: Cache the app shell and assets ---
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Activate worker immediately
-
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(err => {
-        console.error('Failed to cache assets:', err);
-      })
-  );
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache and caching files');
+                return cache.addAll(urlsToCache);
+            })
+            .then(() => self.skipWaiting()) // Force activation of new service worker
+    );
 });
 
-// Activate event — clean up old caches
+// --- ACTIVATE: Clean up old caches ---
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      console.log('Service Worker activated and old caches cleaned.');
-      return self.clients.claim(); // Take control of all pages immediately
-    })
-  );
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim()) // Take control of open pages
+    );
 });
 
-// Fetch event — stale-while-revalidate strategy
+// --- FETCH: Stale-While-Revalidate Strategy ---
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests (like POST, PUT, etc.)
-  if (event.request.method !== 'GET') {
-    return;
-  }
+    // Ignore non-GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
 
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      // Clone the request to avoid locking issues
-      const fetchRequest = event.request.clone();
+    event.respondWith(
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request).then(cachedResponse => {
+                // 1. Create a promise that fetches the request from the network.
+                const fetchPromise = fetch(event.request).then(networkResponse => {
+                    // If we get a valid response, update the cache.
+                    if (networkResponse.ok) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                });
 
-      // Fetch from network (in background)
-      const fetchPromise = fetch(fetchRequest)
-        .then(networkResponse => {
-          // Only cache valid responses
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
-          }
-
-          // Clone response to cache it
-          const responseToCache = networkResponse.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return networkResponse;
+                // 2. Return the cached response immediately if it exists,
+                // while the network request runs in the background.
+                // If not in cache, wait for the network response.
+                return cachedResponse || fetchPromise;
+            });
         })
-        .catch(() => {
-          // If fetch fails, return cached version (for offline)
-          return cachedResponse;
-        });
-
-      // Return cached response immediately if available, else wait for network
-      return cachedResponse || fetchPromise;
-    })
-  );
+    );
 });
