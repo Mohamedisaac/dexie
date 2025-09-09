@@ -11,6 +11,7 @@ const urlsToCache = [
   './fisikis.json',
   './soomaali_mansuur.json',
   './juqraafi.json',
+  './doorashooyinka.json',
   './images/icon-192x192.png',
   './images/icon-512x512.png',
   './images/screen1.jpg',
