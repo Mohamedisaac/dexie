@@ -1,4 +1,4 @@
-const CACHE_NAME = 'terminology-dictionary-v4'; // Increment version for new updates
+const CACHE_NAME = 'terminology-dictionary-v9'; // Increment version for new updates
 const urlsToCache = [
   './',
   './index.html',
